@@ -21,7 +21,7 @@ LLVM_VER="16.0.3"
 LLVM_RUNTIMES="libunwind;libcxxabi;libcxx"
 LLVM_PROJECTS="clang;compiler-rt;lld;lldb;openmp"
 
-. funcs
+. ./funcs
 
 # - - gather sources - - #
 mkdir -pv work/source
