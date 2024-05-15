@@ -1,7 +1,4 @@
 #!/bin/sh
-# - - functions - - #
-. funcs
-
 # - - set known state - - #
 unset CC CXX LD AR AS NM STRIP RANLIB OBJCOPY OBJDUMP OBJSIZE READELF ADDR2LINE
 unset LIBRARY_PATH LD_LIBRARY_PATH
@@ -24,7 +21,10 @@ LLVM_VER="16.0.3"
 LLVM_RUNTIMES="libunwind;libcxxabi;libcxx"
 LLVM_PROJECTS="clang;compiler-rt;lld;lldb;openmp"
 
+. funcs
+
 # - - gather sources - - #
+mkdir -pv work/source
 if [ ! -f "work/source/llvmorg-${LLVM_VER}.tar.gz" ]; then
     curl -L -o work/source/llvmorg-${LLVM_VER}.tar.gz \
         https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-${LLVM_VER}.tar.gz
@@ -101,6 +101,8 @@ export ADDR2LINE="${STAGE1_BUILDDIR}/bin/llvm-addr2line"
 CPPFLAGS="-DNDEBUG -D_FORTIFY_SOURCE=2"
 CFLAGS="${CPPFLAGS} -g0 -s -w -pipe -O3 -march=x86-64 -mtune=generic"
 CFLAGS="${CFLAGS} -fcommon -fstack-protector-strong -flto-jobs=4 -flto=thin"
+CFLAGS="${CFLAGS} -fuse-ld=lld -stdlib=libc++"
+CFLAGS="${CFLAGS} -rtlib=compiler-rt -unwindlib=libunwind"
 CFLAGS="${CFLAGS} -I${STAGE1_BUILDDIR}/include -L${STAGE1_BUILDDIR}/lib"
 CXXFLAGS="${CFLAGS}"
 LDFLAGS="${CFLAGS} -Wl,--as-needed,--sort-common,-z,relro,-z,now"
@@ -156,3 +158,55 @@ cmake -Wno-dev -GNinja \
 
 time samu
 samu install
+
+# - - strip + debloat - - #
+find "${RELEASE_DIR}" -type f \
+    \( -name \*.a -a \
+        ! -name libclang_rt\* \
+        ! -name libunwind.a \
+    \) \
+        -exec rm -rfv {} ';'
+
+rm -rfv "${RELEASE_DIR}"/share
+
+find "${RELEASE_DIR}"/bin -type f -exec strip --strip-all {} ';'
+find "${RELEASE_DIR}"/lib -type f -name \*.a -exec strip --strip-debug {} ';'
+find "${RELEASE_DIR}"/lib -type f -name \*.a -exec "${RANLIB}" {} ';'
+find "${RELEASE_DIR}"/lib -type f -name \*.so* -exec strip --strip-unneeded {} ';'
+
+# - - create compat symlinks - - #
+mkdir "${RELEASE_DIR}"/compat
+pushd "${RELEASE_DIR}"/compat
+
+ln -sfv ../bin/llvm-symbolizer addr2line
+ln -sfv ../bin/llvm-ar         ar
+ln -sfv ../bin/clang-16        as
+ln -sfv ../bin/clang-16        c++
+ln -sfv ../bin/llvm-cxxfilt    c++filt
+ln -sfv ../bin/clang-16        cc
+ln -sfv ../bin/clang-16        cpp
+ln -sfv ../bin/clang-16        g++
+ln -sfv ../bin/clang-16        gcc
+ln -sfv ../bin/llvm-cov        gcov
+ln -sfv ../bin/lld             ld
+ln -sfv ../bin/llvm-nm         nm
+ln -sfv ../bin/llvm-objcopy    objcopy
+ln -sfv ../bin/llvm-objdump    objdump
+ln -sfv ../bin/llvm-ar         ranlib
+ln -sfv ../bin/llvm-readobj    readelf
+ln -sfv ../bin/llvm-size       size
+ln -sfv ../bin/llvm-strings    strings
+ln -sfv ../bin/llvm-objcopy    strip
+
+popd
+
+# - - package - - #
+tar \
+    --numeric-owner \
+    --preserve-permissions \
+    --create --zstd -C "${RELEASE_DIR}"/../ \
+    --file=../../../llvm-standalone-"${LLVM_VER}"-"$(date '+%Y%m%d_%H%M%S')".tar.zst \
+    "release"
+
+cd ../../../
+rm -rf work/
