@@ -1,25 +1,25 @@
-From e3fbacd7a784775562ce51b8c2fad3ae92883bcd Mon Sep 17 00:00:00 2001
+From 7cce813b920c901504efc122ef2d03e075799eb0 Mon Sep 17 00:00:00 2001
 From: must_eat <mss@tutanota.de>
-Date: Sun, 19 Mar 2023 16:04:54 +0300
-Subject: [PATCH 10/11] libcxxabi: disable per target runtime dir.
+Date: Thu, 16 May 2024 23:29:09 +0300
+Subject: [PATCH 7/8] libcxxabi: disable per target runtime dir.
 
 ---
  libcxxabi/CMakeLists.txt | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/libcxxabi/CMakeLists.txt b/libcxxabi/CMakeLists.txt
-index 8f48d402b..cd5e1a5ac 100644
+index da998d222..92816f4be 100644
 --- a/libcxxabi/CMakeLists.txt
 +++ b/libcxxabi/CMakeLists.txt
-@@ -187,7 +187,7 @@ set(CMAKE_MODULE_PATH
- set(LIBCXXABI_INSTALL_RUNTIME_DIR "${CMAKE_INSTALL_BINDIR}" CACHE PATH
+@@ -181,7 +181,7 @@ set(CMAKE_MODULE_PATH
+ set(LIBCXXABI_INSTALL_RUNTIME_DIR "${CMAKE_INSTALL_BINDIR}" CACHE STRING
      "Path where built libc++abi runtime libraries should be installed.")
  
 -if(LLVM_ENABLE_PER_TARGET_RUNTIME_DIR AND NOT APPLE)
 +if(LLVM_ENABLE_PER_TARGET_RUNTIME_DIR AND NOT APPLE AND NOT CMAKE_SYSTEM_NAME MATCHES "Linux")
    set(LIBCXXABI_HEADER_DIR ${LLVM_BINARY_DIR})
    set(LIBCXXABI_LIBRARY_DIR ${LLVM_LIBRARY_OUTPUT_INTDIR}/${LLVM_DEFAULT_TARGET_TRIPLE})
-   set(LIBCXXABI_INSTALL_LIBRARY_DIR lib${LLVM_LIBDIR_SUFFIX}/${LLVM_DEFAULT_TARGET_TRIPLE} CACHE PATH
+   set(LIBCXXABI_INSTALL_LIBRARY_DIR lib${LLVM_LIBDIR_SUFFIX}/${LLVM_DEFAULT_TARGET_TRIPLE} CACHE STRING
 -- 
-2.39.2
+2.45.0
 

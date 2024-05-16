@@ -1,7 +1,7 @@
-From ae759ec2a78da0578de1f749c8e18b376ea6ffe9 Mon Sep 17 00:00:00 2001
+From d461c3dfaa546636b4faa0ef8ecb1b51040fa566 Mon Sep 17 00:00:00 2001
 From: must_eat <mss@tutanota.de>
-Date: Sun, 19 Mar 2023 16:04:38 +0300
-Subject: [PATCH 09/11] libcxx: disable per target runtime dir.
+Date: Thu, 16 May 2024 23:28:27 +0300
+Subject: [PATCH 6/8] libcxx: disable per target runtime dir.
 
 ---
  libcxx/CMakeLists.txt            | 2 +-
@@ -9,10 +9,10 @@ Subject: [PATCH 09/11] libcxx: disable per target runtime dir.
  2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/libcxx/CMakeLists.txt b/libcxx/CMakeLists.txt
-index f3b2c10ff..cbe971de8 100644
+index d392e9507..ee3a44a4c 100644
 --- a/libcxx/CMakeLists.txt
 +++ b/libcxx/CMakeLists.txt
-@@ -408,7 +408,7 @@ set(LIBCXX_INSTALL_RUNTIME_DIR "${CMAKE_INSTALL_BINDIR}" CACHE PATH
+@@ -434,7 +434,7 @@ set(LIBCXX_INSTALL_MODULES_DIR "share/libc++/v1" CACHE STRING
  set(LIBCXX_SHARED_OUTPUT_NAME "c++" CACHE STRING "Output name for the shared libc++ runtime library.")
  set(LIBCXX_STATIC_OUTPUT_NAME "c++" CACHE STRING "Output name for the static libc++ runtime library.")
  
@@ -20,12 +20,12 @@ index f3b2c10ff..cbe971de8 100644
 +if(LLVM_ENABLE_PER_TARGET_RUNTIME_DIR AND NOT APPLE AND NOT CMAKE_SYSTEM_NAME MATCHES "Linux")
    set(LIBCXX_LIBRARY_DIR ${LLVM_LIBRARY_OUTPUT_INTDIR}/${LLVM_DEFAULT_TARGET_TRIPLE})
    set(LIBCXX_GENERATED_INCLUDE_DIR "${LLVM_BINARY_DIR}/include/c++/v1")
-   set(LIBCXX_GENERATED_INCLUDE_TARGET_DIR "${LLVM_BINARY_DIR}/include/${LLVM_DEFAULT_TARGET_TRIPLE}/c++/v1")
+   set(LIBCXX_GENERATED_MODULE_DIR "${LLVM_BINARY_DIR}/modules/c++/v1")
 diff --git a/libcxx/benchmarks/CMakeLists.txt b/libcxx/benchmarks/CMakeLists.txt
-index 7eb76ac63..a2b707c2b 100644
+index 2434d82c6..aecf2c279 100644
 --- a/libcxx/benchmarks/CMakeLists.txt
 +++ b/libcxx/benchmarks/CMakeLists.txt
-@@ -20,7 +20,7 @@ set(BENCHMARK_LIBCXX_COMPILE_FLAGS
+@@ -15,7 +15,7 @@ set(BENCHMARK_LIBCXX_COMPILE_FLAGS
      -Wl,-rpath,${LIBCXX_LIBRARY_DIR}
      ${SANITIZER_FLAGS}
      )
@@ -35,5 +35,5 @@ index 7eb76ac63..a2b707c2b 100644
      -isystem "${LIBCXX_GENERATED_INCLUDE_TARGET_DIR}")
  endif()
 -- 
-2.39.2
+2.45.0
 

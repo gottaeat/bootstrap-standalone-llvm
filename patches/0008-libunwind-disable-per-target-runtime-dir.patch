@@ -1,25 +1,25 @@
-From 74fffdd16db68e9e38fecbc76b56612e51e78ae5 Mon Sep 17 00:00:00 2001
+From 7113bc5359c857df42fe437421b985e142528153 Mon Sep 17 00:00:00 2001
 From: must_eat <mss@tutanota.de>
-Date: Sun, 19 Mar 2023 16:05:14 +0300
-Subject: [PATCH 11/11] libunwind: disable per target runtime dir.
+Date: Thu, 16 May 2024 23:29:37 +0300
+Subject: [PATCH 8/8] libunwind: disable per target runtime dir.
 
 ---
  libunwind/CMakeLists.txt | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/libunwind/CMakeLists.txt b/libunwind/CMakeLists.txt
-index 5c547883f..1bae0aca6 100644
+index 806d5a783..47dcaf142 100644
 --- a/libunwind/CMakeLists.txt
 +++ b/libunwind/CMakeLists.txt
-@@ -114,7 +114,7 @@ set(LIBUNWIND_INSTALL_RUNTIME_DIR "${CMAKE_INSTALL_BINDIR}" CACHE PATH
+@@ -128,7 +128,7 @@ set(LIBUNWIND_INSTALL_RUNTIME_DIR "${CMAKE_INSTALL_BINDIR}" CACHE STRING
  set(LIBUNWIND_SHARED_OUTPUT_NAME "unwind" CACHE STRING "Output name for the shared libunwind runtime library.")
  set(LIBUNWIND_STATIC_OUTPUT_NAME "unwind" CACHE STRING "Output name for the static libunwind runtime library.")
  
 -if(LLVM_ENABLE_PER_TARGET_RUNTIME_DIR AND NOT APPLE)
 +if(LLVM_ENABLE_PER_TARGET_RUNTIME_DIR AND NOT APPLE AND NOT CMAKE_SYSTEM_NAME MATCHES "Linux")
    set(LIBUNWIND_LIBRARY_DIR ${LLVM_LIBRARY_OUTPUT_INTDIR}/${LLVM_DEFAULT_TARGET_TRIPLE})
-   set(LIBUNWIND_INSTALL_LIBRARY_DIR lib${LLVM_LIBDIR_SUFFIX}/${LLVM_DEFAULT_TARGET_TRIPLE} CACHE PATH
+   set(LIBUNWIND_INSTALL_LIBRARY_DIR lib${LLVM_LIBDIR_SUFFIX}/${LLVM_DEFAULT_TARGET_TRIPLE} CACHE STRING
        "Path where built libunwind libraries should be installed.")
 -- 
-2.39.2
+2.45.0
 
