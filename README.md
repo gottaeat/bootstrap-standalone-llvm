@@ -33,6 +33,24 @@ c++ code (for `libc++.so.1`) or code that depends on `libgcc` runtime bits
 linked `libunwind.so.1`), adding `$ROOT/lib` to `LIBRARY_PATH` and appending
 `-I$ROOT/include -L$ROOT/lib` to `{C,LD}FLAGS` might be necessary.
 
+certain cmake projects might force a specific CMAKE_C{,XX}_COMPILER_TARGET and
+this may result in cmake exiting during c{,++} compiler sanity checks. this is
+due to this project having compiled the clang runtime for the
+`x86_64-mss-linux-gnu` target triple:
+```sh
+# default behavior
+$ clang -print-libgcc-file-name
+/release/lib/clang/18/lib/x86_64-mss-linux-gnu/libclang_rt.builtins.a
+#                         ^^^^^^^^^^^^^^^^^^^^             ^^^^^^^^
+
+# when --target is specified
+$ clang --target=x86_64-unknown-linux-gnu -print-libgcc-file-name
+/release/lib/clang/18/lib/linux/libclang_rt.builtins-x86_64.a
+#                         ^^^^^             ^^^^^^^^^^^^^^^
+```
+simply setting `-DCMAKE_C_COMPILER_TARGET` and `-DCMAKE_CXX_COMPILER_TARGET` to
+`x86_64-mss-linux-gnu` will fix this.
+
 ### runtime dependencies
 ```sh
 $ find . -type f -exec file {} ';' | grep ELF\ 64-bit \
