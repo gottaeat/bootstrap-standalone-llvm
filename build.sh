@@ -16,7 +16,7 @@ export CHOST="${CARCH}-mss-linux-gnu"
 export CBUILD="${CHOST}"
 
 # - - spec - - #
-LLVM_VER="16.0.3"
+LLVM_VER="18.1.5"
 
 LLVM_RUNTIMES="libunwind;libcxxabi;libcxx"
 LLVM_PROJECTS="clang;compiler-rt;lld;lldb;openmp"
@@ -71,6 +71,7 @@ cmake -Wno-dev -GNinja \
     -DLIBUNWIND_USE_COMPILER_RT=ON \
     -DCOMPILER_RT_EXCLUDE_ATOMIC_BUILTIN=ON \
     -DCOMPILER_RT_USE_BUILTINS_LIBRARY=OFF \
+    -DCOMPILER_RT_HAS_GCC_S_LIB=ON \
 \
     ../llvm
 
@@ -101,8 +102,6 @@ export ADDR2LINE="${STAGE1_BUILDDIR}/bin/llvm-addr2line"
 CPPFLAGS="-DNDEBUG -D_FORTIFY_SOURCE=2"
 CFLAGS="${CPPFLAGS} -g0 -s -w -pipe -O3 -march=x86-64 -mtune=generic"
 CFLAGS="${CFLAGS} -fcommon -fstack-protector-strong -flto-jobs=4 -flto=thin"
-CFLAGS="${CFLAGS} -fuse-ld=lld -stdlib=libc++"
-CFLAGS="${CFLAGS} -rtlib=compiler-rt -unwindlib=libunwind"
 CFLAGS="${CFLAGS} -I${STAGE1_BUILDDIR}/include -L${STAGE1_BUILDDIR}/lib"
 CXXFLAGS="${CFLAGS}"
 LDFLAGS="${CFLAGS} -Wl,--as-needed,--sort-common,-z,relro,-z,now"
@@ -153,6 +152,7 @@ cmake -Wno-dev -GNinja \
     -DLIBUNWIND_USE_COMPILER_RT=ON \
     -DCOMPILER_RT_EXCLUDE_ATOMIC_BUILTIN=OFF \
     -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
+    -DCOMPILER_RT_HAS_GCC_S_LIB=ON \
 \
     ../llvm
 
@@ -180,13 +180,13 @@ pushd "${RELEASE_DIR}"/compat
 
 ln -sfv ../bin/llvm-symbolizer addr2line
 ln -sfv ../bin/llvm-ar         ar
-ln -sfv ../bin/clang-16        as
-ln -sfv ../bin/clang-16        c++
+ln -sfv ../bin/clang-18        as
+ln -sfv ../bin/clang-18        c++
 ln -sfv ../bin/llvm-cxxfilt    c++filt
-ln -sfv ../bin/clang-16        cc
-ln -sfv ../bin/clang-16        cpp
-ln -sfv ../bin/clang-16        g++
-ln -sfv ../bin/clang-16        gcc
+ln -sfv ../bin/clang-18        cc
+ln -sfv ../bin/clang-18        cpp
+ln -sfv ../bin/clang-18        g++
+ln -sfv ../bin/clang-18        gcc
 ln -sfv ../bin/llvm-cov        gcov
 ln -sfv ../bin/lld             ld
 ln -sfv ../bin/llvm-nm         nm
