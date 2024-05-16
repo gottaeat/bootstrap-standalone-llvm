@@ -8,8 +8,8 @@ setups without requiring anything provided by neither gcc nor binutils.
 `ld.bfd`.
 
 it also installs symlinks to `$ROOT/compat/` to act as drop-in replacements for
-corresponding gnu utilities to combat hardcoded calls for `ld`, `gcc`, `g++`
-etc. without requiring source modifications.
+corresponding gnu utilities to combat hardcoded calls for `ld`, `gcc`, `g++` or
+`cc`, `c++` etc. without requiring source modifications.
 
 ### components
  - clang
@@ -22,17 +22,16 @@ etc. without requiring source modifications.
  - openmp
 
 ### warning
-as `RUNPATH` for all binaries are set `$ORIGIN/../lib` as per llvm cmake
+because `RUNPATH` for all binaries are set `$ORIGIN/../lib` as per llvm cmake
 defaults, the path where the toolchain gets placed at does not cause any type of
-breakage so setting `LD_LIBRARY_PATH` is not necessary.
+breakage so setting `LD_LIBRARY_PATH` is not necessary for using components of
+the resulting toolchain.
 
 however, if the code being built links against any of the components, such as
-c++ code or code that depends on `libgcc` runtime bits, adding `$ROOT/lib` to
-`LIBRARY_PATH` and appending `-I$ROOT/include -$ROOT/lib` might be necessary.
-
-in cases where you do link against a component, setting `LD_LIBRARY_PATH` for
-runtime and `LIBRARY_PATH` for build time might be necessary, such as the case
-of linking `rust` against the `libLLVM-XX` provided with this project.
+c++ code (for `libc++.so.1`) or code that depends on `libgcc` runtime bits
+(which we provide via the injected `libclang_rt.builtins.a` and the dynamically
+linked `libunwind.so.1`), adding `$ROOT/lib` to `LIBRARY_PATH` and appending
+`-I$ROOT/include -L$ROOT/lib` to `{C,LD}FLAGS` might be necessary.
 
 ### runtime dependencies
 ```sh
@@ -40,21 +39,21 @@ $ find . -type f -exec file {} ';' | grep ELF\ 64-bit \
     | awk '{print $1}' | sed 's/:$//g' | xargs objdump -p \
         | grep NEEDED | sort | uniq
 
-NEEDED               ld-linux-x86-64.so.2 # libc
-NEEDED               libc.so.6            # libc
-NEEDED               libm.so.6            # libc
-NEEDED               libffi.so.8          # libffi
-NEEDED               libncursesw.so.6     # ncurses
-NEEDED               libpanelw.so.6       # ncurses
-NEEDED               libLLVM-16.so        # self
-NEEDED               libc++abi.so.1       # self
-NEEDED               libclang-cpp.so.16   # self
-NEEDED               liblldb.so.16        # self
-NEEDED               libunwind.so.1       # self
-NEEDED               libc++.so.1          # self
-NEEDED               liblzma.so.5         # xz
-NEEDED               libz.so.1            # zlib
-NEEDED               libzstd.so.1         # zstd
+  NEEDED               ld-linux-x86-64.so.2 # libc
+  NEEDED               libLLVM.so.18.1      # self
+  NEEDED               libc++.so.1          # self
+  NEEDED               libc++abi.so.1       # self
+  NEEDED               libc.so.6            # libc
+  NEEDED               libclang-cpp.so.18.1 # self
+  NEEDED               libffi.so.8          # libffi
+  NEEDED               liblldb.so.18.1      # self
+  NEEDED               liblzma.so.5         # xz
+  NEEDED               libm.so.6            # libc
+  NEEDED               libncursesw.so.6     # ncurses
+  NEEDED               libpanelw.so.6       # ncurses
+  NEEDED               libunwind.so.1       # self
+  NEEDED               libz.so.1            # zlib
+  NEEDED               libzstd.so.1         # zstd
 ```
 
 ### example environment setup
