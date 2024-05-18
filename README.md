@@ -1,25 +1,35 @@
 # bootstrap-standalone-llvm
 this project builds a complete and standalone llvm suite targeting x86_64 glibc
-linux hosts. it has component and feature parity with gcc + binutils + gdb
-setups without requiring anything provided by neither gcc nor binutils.
-
-`clang{,++}` by default uses `compiler-rt` and `libunwind` instead of
-`libgcc{_s}`, `libc++{,abi}` instead of `libstdc++` and `ld.lld` instead of
-`ld.bfd`.
-
-it also installs symlinks to `$ROOT/compat/` to act as drop-in replacements for
-corresponding gnu utilities to combat hardcoded calls for `ld`, `gcc`, `g++` or
-`cc`, `c++` etc. without requiring source modifications.
+linux hosts and has component and feature parity with traditional gcc +
+binutils + gdb setups. it requires nothing provided by gcc nor binutils, and has
+no runtime dependency except for glibc.
 
 ### components
  - clang
  - compiler-rt
- - libcxx
+ - libcxx 
  - libcxxabi
  - libunwind
  - lld
  - lldb
  - openmp
+
+`clang{,++}` provided by default uses `compiler-rt` and `libunwind` instead of
+`libgcc{_s}`, `libc++{,abi}` instead of `libstdc++` and `ld.lld` instead of
+`ld.bfd`.
+
+there also symlinks installed to `$ROOT/compat/` to act as drop-in replacements
+for corresponding gnu utilities to combat hardcoded calls for `ld`, `gcc`, `g++`
+or `cc`, `c++` etc. without requiring source modifications.
+
+`libc++` (which is linked against `libc++abi` statically, which itself is
+statically linked against `libunwind`), `libunwind`, and `libomp` (openmp) are
+provided in static library forms to remove the existence of the toolchain as
+runtime dependency.
+
+`libLLVM`, `libclang*`, `liblld*` and `liblldb*` are left as shared libraries
+to allow for projects such as rust to be built with it or for module support be
+possible.
 
 ### warning
 because `RUNPATH` for all binaries are set `$ORIGIN/../lib` as per llvm cmake
@@ -27,13 +37,12 @@ defaults, the path where the toolchain gets placed at does not cause any type of
 breakage so setting `LD_LIBRARY_PATH` is not necessary for using components of
 the resulting toolchain.
 
-however, if the code being built links against any of the components, such as
-c++ code (for `libc++.so.1`) or code that depends on `libgcc` runtime bits
-(which we provide via the injected `libclang_rt.builtins.a` and the dynamically
-linked `libunwind.so.1`), adding `$ROOT/lib` to `LIBRARY_PATH` and appending
-`-I$ROOT/include -L$ROOT/lib` to `{C,LD}FLAGS` might be necessary.
+however, setting `LIBRARY_PATH` to `$ROOT/lib` and `-I$ROOT/include -L$ROOT/lib`
+to `{C,LD}FLAGS` during build-time and setting `LD_LIBRARY_PATH` to `$ROOT/lib`
+during runtime is necesary in cases where you link against the shared libraries
+provided.
 
-certain cmake projects might force a specific CMAKE_C{,XX}_COMPILER_TARGET and
+certain cmake projects might force a specific `CMAKE_C{,XX}_COMPILER_TARGET` and
 this may result in cmake exiting during c{,++} compiler sanity checks. this is
 due to this project having compiled the clang runtime for the
 `x86_64-mss-linux-gnu` target triple:
@@ -56,25 +65,15 @@ simply setting `-DCMAKE_C_COMPILER_TARGET` and `-DCMAKE_CXX_COMPILER_TARGET` to
 $ find . -type f -exec file {} ';' | grep ELF\ 64-bit \
     | awk '{print $1}' | sed 's/:$//g' | xargs objdump -p \
         | grep NEEDED | sort | uniq
-
   NEEDED               ld-linux-x86-64.so.2 # libc
-  NEEDED               libLLVM.so.18.1      # self
-  NEEDED               libc++.so.1          # self
-  NEEDED               libc++abi.so.1       # self
-  NEEDED               libc.so.6            # libc
   NEEDED               libclang-cpp.so.18.1 # self
-  NEEDED               libffi.so.8          # libffi
+  NEEDED               libc.so.6            # libc
   NEEDED               liblldb.so.18.1      # self
-  NEEDED               liblzma.so.5         # xz
+  NEEDED               libLLVM.so.18.1      # self
   NEEDED               libm.so.6            # libc
-  NEEDED               libncursesw.so.6     # ncurses
-  NEEDED               libpanelw.so.6       # ncurses
-  NEEDED               libunwind.so.1       # self
-  NEEDED               libz.so.1            # zlib
-  NEEDED               libzstd.so.1         # zstd
 ```
 
-### example environment setup
+### example build-time and runtime environment setup
 ```sh
 LLVM_PATH="/path/to/release"
 
