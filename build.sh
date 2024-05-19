@@ -233,6 +233,7 @@ LIBRARY_PATH="${STAGE1_BUILDDIR}/lib:${LIBRARY_PATH}" \
 meson setup -Dbuildtype=plain \
     --prefix=${EXTERNAL_LIBDIR} \
     --default-library=static \
+    -Dlibdir=${EXTERNAL_LIBDIR}/lib \
     -Db_ndebug=true \
     -Dbacktrace=disabled \
     -Dbin_contrib=false \
