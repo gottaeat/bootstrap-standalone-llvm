@@ -31,7 +31,9 @@ LLVM_PROJECTS="clang;compiler-rt;lld;lldb;openmp"
 . ./funcs
 
 # - - gather sources - - #
-mkdir -pv work/source
+mkdir -pv \
+    out/ \
+    work/source/
 
 if [ ! -f "work/source/llvmorg-${LLVM_VER}.tar.gz" ]; then
     curl -L -o work/source/llvmorg-${LLVM_VER}.tar.gz \
@@ -255,7 +257,8 @@ rm -rf zstd-${ZSTD_VER}/
 mkdir -pv "${STAGE2_BUILDDIR}"
 cd "${STAGE2_BUILDDIR}"
 
-RELEASE_DIR="${PWD}"/release
+RELEASE_NAME="llvm-standalone-${LLVM_VER}"
+RELEASE_DIR="${PWD}/${RELEASE_NAME}"
 
 cmake -Wno-dev -GNinja \
     -DCMAKE_INSTALL_PREFIX="${RELEASE_DIR}" \
@@ -361,12 +364,14 @@ ln -sfv ../bin/llvm-symbolizer    addr2line
 popd
 
 # - - package - - #
+TARBALL_NAME="llvm-standalone-${LLVM_VER}-$(date '+%Y%m%d_%H%M%S').tar.zst"
+
 tar \
     --numeric-owner \
     --preserve-permissions \
     --create --zstd -C "${RELEASE_DIR}"/../ \
-    --file=../../../llvm-standalone-"${LLVM_VER}"-"$(date '+%Y%m%d_%H%M%S')".tar.zst \
-    "release"
+    --file="../../../out/${TARBALL_NAME}" \
+    "${RELEASE_NAME}"
 
 cd ../../../
-rm -rf work/
+rm -rf work/ || true
