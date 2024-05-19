@@ -1,8 +1,8 @@
 # bootstrap-standalone-llvm
 this project builds a complete and standalone llvm suite targeting x86_64 glibc
 linux hosts and has component and feature parity with traditional gcc +
-binutils + gdb setups. it requires nothing provided by gcc nor binutils, and has
-no runtime dependency except for glibc.
+binutils + gdb setups. it requires nothing provided by neither gcc nor binutils,
+and has no runtime dependencies except for glibc.
 
 ### components
  - clang
@@ -28,8 +28,25 @@ provided in static library forms to remove the existence of the toolchain as
 runtime dependency.
 
 `libLLVM`, `libclang*`, `liblld*` and `liblldb*` are left as shared libraries
-to allow for projects such as rust to be built with it or for module support be
-possible.
+to allow for projects such as rust to be built with it or for module support to
+be possible.
+
+### building
+#### host
+simply run `./build.sh` in the root directory of this repo. it is assumed that
+you have the build requirements, if not the case, peep into the `Dockerfile`.
+
+#### docker
+this simply installs build-time dependencies and runs `build.sh` inside whatever
+the latest debian version is.
+```
+docker compose run --build=true \
+    bootstrap-llvm \
+    /bin/bash -c './build.sh' --build
+```
+
+however you may have chosen to proceed, you should have a tarball in `out/` in
+the root of this repo.
 
 ### warning
 because `RUNPATH` for all binaries are set `$ORIGIN/../lib` as per llvm cmake
@@ -38,9 +55,9 @@ breakage so setting `LD_LIBRARY_PATH` is not necessary for using components of
 the resulting toolchain.
 
 however, setting `LIBRARY_PATH` to `$ROOT/lib` and `-I$ROOT/include -L$ROOT/lib`
-to `{C,LD}FLAGS` during build-time and setting `LD_LIBRARY_PATH` to `$ROOT/lib`
-during runtime is necesary in cases where you link against the shared libraries
-provided.
+to `{C,LD}FLAGS` during build-time, and setting `LD_LIBRARY_PATH` to `$ROOT/lib`
+during runtime in cases where you link against the shared libraries provided is
+necessary.
 
 certain cmake projects might force a specific `CMAKE_C{,XX}_COMPILER_TARGET` and
 this may result in cmake exiting during c{,++} compiler sanity checks. this is
@@ -97,7 +114,7 @@ READELF="${LLVM_PATH}/bin/llvm-readelf"
 ADDR2LINE="${LLVM_PATH}/bin/llvm-addr2line"
 export CC CXX LD AR AS NM STRIP RANLIB OBJCOPY OBJDUMP OBJSIZE READELF ADDR2LINE
 
-CPPFLAGS="-DMY_DEF=goodvalue"
+CPPFLAGS="-DMYDEF=MYVAL"
 CFLAGS="${CPPFLAGS} -O2 -pipe -I${LLVM_PATH}/include -L${LLVM_PATH}/lib"
 CXXFLAGS="${CFLAGS}"
 LDFLAGS="${CFLAGS} -Wl,--as-needed,--sort-common,-z,relro,-z,now"
