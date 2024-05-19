@@ -1,0 +1,9 @@
+services:
+    bootstrap-llvm:
+        container_name: bootstrap-llvm
+        build:
+            context: .
+        volumes:
+            - ${PWD}/work/:/repo/work
+            - ${PWD}/work/tmp/:/tmp
+            - ${PWD}/out:/repo/out
