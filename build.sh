@@ -18,7 +18,7 @@ export CHOST="${CARCH}-mss-linux-gnu"
 export CBUILD="${CHOST}"
 
 # - - spec - - #
-LLVM_VER="18.1.5"
+LLVM_VER="18.1.8"
 LIBFFI_VER="3.4.6"
 XZ_VER="5.4.6"
 NCURSES_VER="6.5"
